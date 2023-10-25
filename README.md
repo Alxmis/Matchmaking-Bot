@@ -13,7 +13,7 @@ The database stores information about participants who are looking for a suitabl
 
 When interacting with the bot, messages from one user are stored in a database and then forwarded to another user in their chat with the bot based on a unique identifier (ID). In addition, we are considering implementing additional functionality to improve the participant experience. 
 
-# Parts
+# Steps
 
 1. Set up a bot in Telegram:
    - Create a new bot via BotFather and get a token.
