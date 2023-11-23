@@ -5,7 +5,7 @@ Finds people with similar interests to chat with
 Conversation search frontend: Engel Danila  
 Communication frontend: Mishchenko Alexander  
 Conversation search backend: Artem Abrosimov  
-Communication backend: Goibov Dadojon
+Communication backend: Ghoibov Dadojon
 
 # Description
 
