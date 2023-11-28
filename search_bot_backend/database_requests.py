@@ -1,4 +1,8 @@
 import sqlite3
+import os.path
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, "Users.db")
 
 
 class BotDB:
@@ -20,6 +24,10 @@ class BotDB:
 
     def get_sex(self, user_id):  ## 0 - female, 1 - male
         result = self.cursor.execute("SELECT Sex FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
+    def get_name(self, user_id):
+        result = self.cursor.execute("SELECT Name FROM users WHERE UserID = ?", (user_id,))
         return result.fetchone()[0]
 
     def get_age(self, user_id):
@@ -87,4 +95,4 @@ class BotDB:
         self.conn.close()
 
 
-BotDB = BotDB('Users.db')
+BotDB = BotDB(db_path)

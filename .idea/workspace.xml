@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aab3fadf-cad1-4108-a401-dc8ba068fae1" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/handlers/simp_front.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/states/states.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/handlers/simp_front.py" beforeDir="false" afterPath="$PROJECT_DIR$/handlers/simp_front.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboards/keyboards.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboards/keyboards.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/search_bot_backend/Users.db" beforeDir="false" afterPath="$PROJECT_DIR$/search_bot_backend/Users.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/search_bot_backend/database_requests.py" beforeDir="false" afterPath="$PROJECT_DIR$/search_bot_backend/database_requests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/states/states.py" beforeDir="false" afterPath="$PROJECT_DIR$/states/states.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,6 +54,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\admin\Desktop\pyproj\Matchmaking-Bot" />
+      <recent name="C:\Users\admin\Desktop\pyproj\Matchmaking-Bot\backend" />
       <recent name="C:\Users\admin\Desktop\pyproj\Matchmaking-Bot\handlers" />
     </key>
   </component>
@@ -93,6 +98,11 @@
       <updated>1700485477193</updated>
       <workItem from="1700485478211" duration="14542000" />
       <workItem from="1700571208617" duration="8112000" />
+      <workItem from="1700742366369" duration="757000" />
+      <workItem from="1701083714123" duration="289000" />
+      <workItem from="1701084020022" duration="10896000" />
+      <workItem from="1701174249330" duration="5091000" />
+      <workItem from="1701194148337" duration="312000" />
     </task>
     <servers />
   </component>
@@ -100,7 +110,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Matchmaking_Bot$main.coverage" NAME="main Coverage Results" MODIFIED="1700577584181" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Matchmaking_Bot$main.coverage" NAME="main Coverage Results" MODIFIED="1701179490432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Matchmaking_Bot$simp_front.coverage" NAME="simp_front Coverage Results" MODIFIED="1700499220216" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
