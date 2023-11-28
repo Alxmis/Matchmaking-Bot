@@ -1,4 +1,8 @@
 import sqlite3
+import os.path
+
+BASE_DIR = os.path.dirname(os.path.abspath("Users.db"))
+db_path = os.path.join(BASE_DIR, "Users.db")
 
 
 class BotDB:
@@ -14,10 +18,6 @@ class BotDB:
         result = self.cursor.execute("SELECT ID FROM users WHERE UserID = ?", (user_id,))
         return bool(len(result.fetchall()))
 
-    def get_user_id(self, user_id):
-        result = self.cursor.execute("SELECT ID FROM users WHERE UserID = ?", (user_id,))
-        return result.fetchone()[0]
-
     def get_sex(self, user_id):  ## 0 - female, 1 - male
         result = self.cursor.execute("SELECT Sex FROM users WHERE UserID = ?", (user_id,))
         return result.fetchone()[0]
@@ -26,10 +26,31 @@ class BotDB:
         result = self.cursor.execute("SELECT Age FROM users WHERE UserID = ?", (user_id,))
         return result.fetchone()[0]
 
+    def get_name(self, user_id):
+        result = self.cursor.execute("SELECT Name FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
     def get_interests(self, user_id):
         self.cursor.execute("SELECT Interest1, Interest2, Interest3 FROM users WHERE UserID = ?", (user_id,))
         interests = self.cursor.fetchone()
         return interests if interests else (None, None, None)
+
+    def update_sex(self, user_id, sex):  ## Не злоупотреблять
+        self.cursor.execute("UPDATE users SET Sex = ? WHERE UserID = ?", (sex, user_id))
+        self.conn.commit()
+
+    def update_age(self, user_id, age):
+        self.cursor.execute("UPDATE users SET Age = ? WHERE UserID = ?", (age, user_id))
+        self.conn.commit()
+
+    def update_name(self, user_id, name):
+        self.cursor.execute("UPDATE users SET Name = ? WHERE UserID = ?", (name, user_id))
+        self.conn.commit()
+
+    def update_interests(self, user_id, interest1, interest2, interest3):
+        self.cursor.execute("UPDATE users SET Interest1 = ?, Interest2 = ?, Interest3 = ? WHERE UserID = ?",
+                            (interest1, interest2, interest3, user_id))
+        self.conn.commit()
 
     def add_user(self, user_id, sex, age, name, interest1, interest2, interest3):
         self.cursor.execute(
@@ -87,4 +108,4 @@ class BotDB:
         self.conn.close()
 
 
-BotDB = BotDB('Users.db')
+BotDB = BotDB(db_path)
