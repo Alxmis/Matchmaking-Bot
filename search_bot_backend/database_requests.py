@@ -14,9 +14,17 @@ class BotDB:
         result = self.cursor.execute("SELECT UserID FROM users")
         return [row[0] for row in result.fetchall()]
 
+    def get_waiting_users(self):
+        result = self.cursor.execute("SELECT UserID FROM users WHERE IsWaiting = 1")
+        return [row[0] for row in result.fetchall()]
+
     def user_exists(self, user_id):
         result = self.cursor.execute("SELECT ID FROM users WHERE UserID = ?", (user_id,))
         return bool(len(result.fetchall()))
+
+    def get_status(self, user_id):
+        result = self.cursor.execute("SELECT IsWaiting FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
 
     def get_sex(self, user_id):  ## 0 - female, 1 - male
         result = self.cursor.execute("SELECT Sex FROM users WHERE UserID = ?", (user_id,))
@@ -34,6 +42,10 @@ class BotDB:
         self.cursor.execute("SELECT Interest1, Interest2, Interest3 FROM users WHERE UserID = ?", (user_id,))
         interests = self.cursor.fetchone()
         return interests if interests else (None, None, None)
+
+    def update_status(self, user_id, status):  ## Default 1
+        self.cursor.execute("UPDATE users SET IsWaiting = ? WHERE UserID = ?", (status, user_id))
+        self.conn.commit()
 
     def update_sex(self, user_id, sex):  ## Не злоупотреблять
         self.cursor.execute("UPDATE users SET Sex = ? WHERE UserID = ?", (sex, user_id))
@@ -71,32 +83,29 @@ class BotDB:
         return [row[0] for row in result.fetchall()]
 
     def get_partner(self, user_id):
-        dialogues = self.get_dialogues(user_id)
-        if len(dialogues) == len(self.get_all_users()) - 1:
-            return "You have already talk with all other users"  ## print?
-        else:
-            self.cursor.execute("""
-                SELECT UserID FROM users 
-                WHERE UserID != ? 
-                AND UserID NOT IN (SELECT OtherUserID FROM dialogues WHERE UserID = ?)
-            """, (user_id, user_id))
-            potential_partners = [row[0] for row in self.cursor.fetchall()]
-            best_partner = None
-            best_score = -1
-            for partner in potential_partners:
-                score = 0
-                if self.get_sex(partner) == self.get_sex(user_id):
-                    score += 1
-                if abs(self.get_age(partner) - self.get_age(user_id)) <= 5:
-                    score += 1
-                interests_partner = set(self.get_interests(partner))
-                interests_user = set(self.get_interests(user_id))
-                common_interests = interests_partner.intersection(interests_user)
-                score += len(common_interests)  ## check and debug the formula
-                if score > best_score:
-                    best_score = score
-                    best_partner = partner
-            return best_partner
+        self.cursor.execute("""
+                    SELECT UserID FROM users 
+                    WHERE UserID != ? 
+                    AND IsWaiting = 1
+                    AND UserID NOT IN (SELECT OtherUserID FROM dialogues WHERE UserID = ?)
+                """, (user_id, user_id))
+        potential_partners = [row[0] for row in self.cursor.fetchall()]
+        best_partner = None
+        best_score = -1
+        for partner in potential_partners:
+            score = 0
+            if self.get_sex(partner) == self.get_sex(user_id):
+                score += 1
+            if abs(self.get_age(partner) - self.get_age(user_id)) <= 5:
+                score += 1
+            interests_partner = set(self.get_interests(partner))
+            interests_user = set(self.get_interests(user_id))
+            common_interests = interests_partner.intersection(interests_user)
+            score += len(common_interests)  ## check and debug the formula
+            if score > best_score:
+                best_score = score
+                best_partner = partner
+        return best_partner ## Next add_dialodue and update_status
 
     def delete_user(self, user_id):
         self.cursor.execute("DELETE FROM users WHERE UserID = ?", (user_id,))
