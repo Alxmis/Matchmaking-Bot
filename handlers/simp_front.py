@@ -11,9 +11,7 @@ router = Router() # инит роутера, чтоб не кидать все �
 #-----------------------------------------------------------------основная часть-----------------------------------------------------------------------
 @router.message(Command("start"))
 async def sex(message: types.Message, state: FSMContext):
-    a= BotDB.get_user_id(message.from_user.id)
-    BotDB.get_user_id(a)
-    if (BotDB.get_user_id(message.from_user.id) != None):
+    if (BotDB.user_exists(message.from_user.id)):
         await state.set_state(MainState.in_main)
         await message.answer(f"С возвращением, {BotDB.get_name(message.from_user.id)}!", reply_markup=kb.kb_main) #если у нас уже был юзер в бд
         return
@@ -85,20 +83,22 @@ async def change_age(message: types.Message, state: FSMContext):
 async def interests(message: types.Message, state: FSMContext):
     await state.update_data(interests = message.text.strip().split())
     user = await state.get_data()
-    BotDB.add_user(message.from_user.id, user['choosen_sex'], user['choosen_age'], user['choosen_name'], user['interests'][0], user['interests'][1], user['interests'][2])
+    BotDB.add_user(message.chat.id, user['choosen_sex'], user['choosen_age'], user['choosen_name'], user['interests'][0], user['interests'][1], user['interests'][2])
     await message.answer("Супер, регистрация пройдена! Теперь вам доступен поиск собеседника", reply_markup = kb.kb_main)
     await state.set_state(MainState.in_main)
 
 @router.message(MainState.in_main)
 async def main(message: types.Message, state: FSMContext):
     if (message.text == 'Найти собеседника'):
-        bot.send_message(text = "Ищем собеседника...", chat_id = message.chat.id)
-        partner = await BotDB.get_partner(message.chat.id)
+        await bot.send_message(text = "Ищем собеседника...", chat_id = message.chat.id)
+        partner = BotDB.get_partner(message.chat.id)
+        print(partner)
         BotDB.add_dialogue(message.chat.id, partner)
-        state.set_data(cur_partner = partner)
-        bot.send_message(text="Собеседник найден, общайтесь!", chat_id=message.chat.id)
-        state.set_state(MainState.talking)
+        await state.update_data(cur_partner = partner)
+        await bot.send_message(text="Собеседник найден, общайтесь!", chat_id=message.chat.id)
+        await state.set_state(MainState.talking)
 @router.message(MainState.talking)
 async def talk(message: types.Message, state: FSMContext):
-    partner = state.get_data()["cur_partner"]
-    bot.send_message(text = message.text, chat_id = partner)
+    partner = await state.get_data()
+    print(partner)
+    await bot.send_message(text = message.text, chat_id = partner['cur_partner'])
