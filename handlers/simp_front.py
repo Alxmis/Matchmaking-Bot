@@ -93,12 +93,30 @@ async def main(message: types.Message, state: FSMContext):
         await bot.send_message(text = "Ищем собеседника...", chat_id = message.chat.id)
         partner = BotDB.get_partner(message.chat.id)
         print(partner)
-        BotDB.add_dialogue(message.chat.id, partner)
-        await state.update_data(cur_partner = partner)
-        await bot.send_message(text="Собеседник найден, общайтесь!", chat_id=message.chat.id)
+        print(message.chat.id)
+        if (partner != None):
+            await bot.send_message(text="Собеседник найден, общайтесь!", chat_id=message.chat.id, reply_markup = kb.kb_cancel)
+            await bot.send_message(text="Собеседник найден, общайтесь!", chat_id=partner, reply_markup = kb.kb_cancel)
+            BotDB.update_status(partner, 0)
+            BotDB.update_status(message.chat.id, 0)
+            BotDB.add_dialogue(partner, message.chat.id)
+        else:
+            await bot.send_message(text="Очередь пока пустая, ждите!", chat_id=message.chat.id, reply_markup = kb.kb_cancel)
         await state.set_state(MainState.talking)
+
+
 @router.message(MainState.talking)
 async def talk(message: types.Message, state: FSMContext):
-    partner = await state.get_data()
-    print(partner)
-    await bot.send_message(text = message.text, chat_id = partner['cur_partner'])
+    get_dia = BotDB.get_dialogues(message.chat.id)
+    if (message.text != "Закончить сессию" and len(get_dia) != 0):
+        await bot.send_message(text = message.text, chat_id = get_dia[0])
+    elif (message.text == "Закончить сессию"):
+        await bot.send_message(text="Сессия закончена", chat_id=message.chat.id, reply_markup = kb.kb_main)
+        get_dia = BotDB.get_dialogues(message.chat.id)
+        if (len(get_dia) != 0):
+            await bot.send_message(text="Сессия закончена", chat_id=get_dia[0], reply_markup = kb.kb_main)
+            BotDB.remove_dialogues(message.chat.id)
+            BotDB.remove_dialogues(get_dia[0])
+        await state.set_state(MainState.in_main)
+    elif (len(get_dia) == 0):
+        await bot.send_message(text="Вас никто не слышит", chat_id=message.chat.id)

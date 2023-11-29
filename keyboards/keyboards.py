@@ -13,3 +13,5 @@ kb_ch = types.ReplyKeyboardMarkup(keyboard = [[sex_ch, age_ch, name_ch, okay]], 
 ch_profile = types.KeyboardButton(text = 'Изменить профиль')
 search_conv = types.KeyboardButton(text = 'Найти собеседника')
 kb_main = types.ReplyKeyboardMarkup(keyboard = [[ ch_profile, search_conv]], resize_keyboard = True)
+
+kb_cancel = types.ReplyKeyboardMarkup(keyboard = [[types.KeyboardButton(text = 'Закончить сессию')]], resize_keyboard = True)
