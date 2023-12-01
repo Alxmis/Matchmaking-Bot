@@ -1,0 +1,134 @@
+import sqlite3
+import os.path
+
+BASE_DIR = os.path.dirname(os.path.abspath("Users.db"))
+db_path = os.path.join(BASE_DIR, "Users.db")
+
+
+def check_age(age):
+    try:
+        age = int(age)
+        if 0 <= age <= 120:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
+
+
+class BotDB:
+    def __init__(self, db_file):
+        self.conn = sqlite3.connect(db_file)
+        self.cursor = self.conn.cursor()
+
+    def get_all_users(self):
+        result = self.cursor.execute("SELECT UserID FROM users")
+        return [row[0] for row in result.fetchall()]
+
+    def get_waiting_users(self):
+        result = self.cursor.execute("SELECT UserID FROM users WHERE IsWaiting = 1")
+        return [row[0] for row in result.fetchall()]
+
+    def user_exists(self, user_id):
+        result = self.cursor.execute("SELECT ID FROM users WHERE UserID = ?", (user_id,))
+        return bool(len(result.fetchall()))
+
+    def get_status(self, user_id):
+        result = self.cursor.execute("SELECT IsWaiting FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
+    def get_sex(self, user_id):  ## 0 - female, 1 - male
+        result = self.cursor.execute("SELECT Sex FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
+    def get_age(self, user_id):
+        result = self.cursor.execute("SELECT Age FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
+    def get_name(self, user_id):
+        result = self.cursor.execute("SELECT Name FROM users WHERE UserID = ?", (user_id,))
+        return result.fetchone()[0]
+
+    def get_interests(self, user_id):
+        result = self.cursor.execute("SELECT Interests FROM users WHERE UserID = ?", (user_id,))
+        interests = result.fetchone()[0]
+        return interests.split(',') if interests else []
+
+    def update_status(self, user_id, status):  ## Default 1
+        self.cursor.execute("UPDATE users SET IsWaiting = ? WHERE UserID = ?", (status, user_id))
+        self.conn.commit()
+
+    def update_sex(self, user_id, sex):  ## Не злоупотреблять
+        self.cursor.execute("UPDATE users SET Sex = ? WHERE UserID = ?", (sex, user_id))
+        self.conn.commit()
+
+    def update_age(self, user_id, age):
+        self.cursor.execute("UPDATE users SET Age = ? WHERE UserID = ?", (age, user_id))
+        self.conn.commit()
+
+    def update_name(self, user_id, name):
+        self.cursor.execute("UPDATE users SET Name = ? WHERE UserID = ?", (name, user_id))
+        self.conn.commit()
+
+    def update_interests(self, user_id, interests):
+        interests_str = ','.join(interests)
+        self.cursor.execute("UPDATE users SET Interests = ? WHERE UserID = ?", (interests_str, user_id))
+        self.conn.commit()
+
+    def add_user(self, user_id, sex, age, name, interests):
+        interests_str = ','.join(interests)
+        self.cursor.execute(
+            "INSERT INTO users (UserID, Sex, Age, Name, Interests) VALUES (?, ?, ?, ?, ?)",
+            (user_id, sex, age, name, interests_str))
+        return self.conn.commit()
+
+    def add_dialogue(self, user_id, other_user_id):
+        self.cursor.execute("INSERT INTO dialogues (UserID, OtherUserID) VALUES (?, ?)",
+                            (user_id, other_user_id))
+        self.cursor.execute("INSERT INTO dialogues (UserID, OtherUserID) VALUES (?, ?)",
+                            (other_user_id, user_id))
+        return self.conn.commit()
+
+    def get_dialogues(self, user_id):
+        result = self.cursor.execute("SELECT OtherUserID FROM dialogues WHERE UserID = ?",
+                                     (user_id,))
+        return [row[0] for row in result.fetchall()]
+
+    def get_partner(self, user_id):
+        self.cursor.execute("""
+                    SELECT UserID FROM users 
+                    WHERE UserID != ? 
+                    AND IsWaiting = 1
+                    AND UserID NOT IN (SELECT OtherUserID FROM dialogues WHERE UserID = ?)
+                """, (user_id, user_id))
+        potential_partners = [row[0] for row in self.cursor.fetchall()]
+        best_partner = None
+        best_score = -1
+        for partner in potential_partners:
+            score = 0
+            if self.get_name(partner).lower() == self.get_name(user_id).lower():  ## [Smile]
+                score += 1
+            if self.get_sex(partner) == self.get_sex(user_id):
+                score += 1
+            if abs(self.get_age(partner) - self.get_age(user_id)) <= 5:
+                score += 1
+            interests_partner = set(self.get_interests(partner))
+            interests_user = set(self.get_interests(user_id))
+            common_interests = interests_partner.intersection(interests_user)
+            score += len(common_interests)  ## Check and debug the formula
+            if score > best_score:
+                best_score = score
+                best_partner = partner
+        return best_partner  ## Next add_dialodue and update_status
+
+    def delete_user(self, user_id):
+        self.cursor.execute("DELETE FROM users WHERE UserID = ?", (user_id,))
+        self.cursor.execute("DELETE FROM dialogues WHERE UserID = ?", (user_id,))
+        self.cursor.execute("DELETE FROM dialogues WHERE OtherUserID = ?", (user_id,))
+        self.conn.commit()
+
+    def close(self):
+        self.conn.close()
+
+
+BotDB = BotDB(db_path)
