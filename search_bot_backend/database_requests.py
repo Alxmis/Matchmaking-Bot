@@ -5,6 +5,17 @@ BASE_DIR = os.path.dirname(os.path.abspath("Users.db"))
 db_path = os.path.join(BASE_DIR, "Users.db")
 
 
+def check_age(age):
+    try:
+        age = int(age)
+        if 0 <= age <= 120:
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
+
+
 class BotDB:
     def __init__(self, db_file):
         self.conn = sqlite3.connect(db_file)
@@ -39,9 +50,9 @@ class BotDB:
         return result.fetchone()[0]
 
     def get_interests(self, user_id):
-        self.cursor.execute("SELECT Interest1, Interest2, Interest3 FROM users WHERE UserID = ?", (user_id,))
-        interests = self.cursor.fetchone()
-        return interests if interests else (None, None, None)
+        result = self.cursor.execute("SELECT Interests FROM users WHERE UserID = ?", (user_id,))
+        interests = result.fetchone()[0]
+        return interests.split(',') if interests else []
 
     def update_status(self, user_id, status):  ## Default 1
         self.cursor.execute("UPDATE users SET IsWaiting = ? WHERE UserID = ?", (status, user_id))
@@ -59,15 +70,16 @@ class BotDB:
         self.cursor.execute("UPDATE users SET Name = ? WHERE UserID = ?", (name, user_id))
         self.conn.commit()
 
-    def update_interests(self, user_id, interest1, interest2, interest3):
-        self.cursor.execute("UPDATE users SET Interest1 = ?, Interest2 = ?, Interest3 = ? WHERE UserID = ?",
-                            (interest1, interest2, interest3, user_id))
+    def update_interests(self, user_id, interests):
+        interests_str = ','.join(interests)
+        self.cursor.execute("UPDATE users SET Interests = ? WHERE UserID = ?", (interests_str, user_id))
         self.conn.commit()
 
-    def add_user(self, user_id, sex, age, name, interest1, interest2, interest3):
+    def add_user(self, user_id, sex, age, name, interests):
+        interests_str = ','.join(interests)
         self.cursor.execute(
-            "INSERT INTO users (UserID, Sex, Age, Name, Interest1, Interest2, Interest3) VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (user_id, sex, age, name, interest1, interest2, interest3))
+            "INSERT INTO users (UserID, Sex, Age, Name, Interests) VALUES (?, ?, ?, ?, ?)",
+            (user_id, sex, age, name, interests_str))
         return self.conn.commit()
 
     def add_dialogue(self, user_id, other_user_id):
@@ -94,6 +106,8 @@ class BotDB:
         best_score = -1
         for partner in potential_partners:
             score = 0
+            if self.get_name(partner).lower() == self.get_name(user_id).lower():  ## [Smile]
+                score += 1
             if self.get_sex(partner) == self.get_sex(user_id):
                 score += 1
             if abs(self.get_age(partner) - self.get_age(user_id)) <= 5:
@@ -101,11 +115,11 @@ class BotDB:
             interests_partner = set(self.get_interests(partner))
             interests_user = set(self.get_interests(user_id))
             common_interests = interests_partner.intersection(interests_user)
-            score += len(common_interests)  ## check and debug the formula
+            score += len(common_interests)  ## Check and debug the formula
             if score > best_score:
                 best_score = score
                 best_partner = partner
-        return best_partner ## Next add_dialodue and update_status
+        return best_partner  ## Next add_dialodue and update_status
 
     def delete_user(self, user_id):
         self.cursor.execute("DELETE FROM users WHERE UserID = ?", (user_id,))
