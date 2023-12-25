@@ -201,10 +201,8 @@ async def main(message: types.Message, state: FSMContext):
             BotDB.update_status(message.chat.id, 0)
             BotDB.add_dialogue(partner, message.chat.id)
         else:
-            await bot.send_message(text="Собеседников пока нет, попробуйте позже! \nИдет возвращение в главное меню.", chat_id=message.chat.id, reply_markup=ReplyKeyboardRemove())
+            await bot.send_message(text="Собеседников пока нет, попробуйте позже!", chat_id=message.chat.id, reply_markup=kb.kb_cancel)
             time.sleep(2)
-            await bot.send_message(text="Вы возвращены в меню!", chat_id=message.chat.id, reply_markup=kb.kb_main)
-            await state.set_state(MainState.in_main)
         await state.set_state(MainState.talking)
 
     elif message.text == 'Удалить меня из бота':
@@ -221,7 +219,6 @@ async def main(message: types.Message, state: FSMContext):
 async def talk(message: types.Message, state: FSMContext):
     get_dia = BotDB.get_dialogues(message.chat.id)
     if message.text != "Закончить сессию" and len(get_dia) != 0:
-        # await bot.send_message(text=message.text, chat_id=get_dia[0])
         await bot.copy_message(get_dia[0], message.chat.id, message.message_id)
     elif message.text == "Закончить сессию":
         await bot.send_message(text="Сессия закончена", chat_id=message.chat.id, reply_markup=kb.kb_main)
@@ -231,16 +228,12 @@ async def talk(message: types.Message, state: FSMContext):
             BotDB.remove_dialogues(message.chat.id)
             BotDB.remove_dialogues(get_dia[0])
 
-
         await bot.send_message(text="Идет возвращение в главное меню", chat_id=message.chat.id, reply_markup=ReplyKeyboardRemove())
-        # await bot.send_message(text="Идет возвращение в главное меню", chat_id=get_dia[0], reply_markup=ReplyKeyboardRemove())
         time.sleep(2)
         await bot.send_message(text="Вы возвращены в меню!", chat_id=message.chat.id, reply_markup=kb.kb_main)
-        # await bot.send_message(text="Вы возвращены в меню!", chat_id=get_dia[0], reply_markup=kb.kb_main)
         await state.set_state(MainState.in_main)
     elif len(get_dia) == 0:
-        await bot.send_message(text="Вас никто не слышит", chat_id=message.chat.id)
-        await state.set_state(MainState.in_main)
+        return await bot.send_message(text="Вас никто не слышит", chat_id=message.chat.id, reply_markup=kb.kb_cancel)
 
 
 # ---------------------------------------------------------------------------часть редактирования профиля--------------------------------------------------
