@@ -41,7 +41,7 @@ class BotDB:
     def get_interests(self, user_id):
         self.cursor.execute("SELECT Interest1, Interest2, Interest3 FROM users WHERE UserID = ?", (user_id,))
         interests = self.cursor.fetchone()
-        return interests if interests else (None, None, None)
+        return chr(10).join(interests) if interests else (None, None, None)
 
     def update_status(self, user_id, status):  ## Default 1
         self.cursor.execute("UPDATE users SET IsWaiting = ? WHERE UserID = ?", (status, user_id))
