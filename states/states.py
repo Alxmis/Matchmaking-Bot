@@ -13,3 +13,7 @@ class DataState(StatesGroup):
 class MainState(StatesGroup):
     in_main = State()
     talking = State()
+    ch_profile = State()
+    ch_age = State()
+    ch_name = State()
+    ch_sex = State()

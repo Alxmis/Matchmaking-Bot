@@ -100,9 +100,9 @@ class BotDB:
         for partner in potential_partners:
             score = 0
             if self.get_sex(partner) == self.get_sex(user_id):
-                score += 1
+                score += 0.2
             if abs(self.get_age(partner) - self.get_age(user_id)) <= 5:
-                score += 1
+                score += 0.2
             interests_partner = set(self.get_interests(partner))
             interests_user = set(self.get_interests(user_id))
             common_interests = interests_partner.intersection(interests_user)
